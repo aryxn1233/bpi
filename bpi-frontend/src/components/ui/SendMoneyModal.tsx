@@ -1,28 +1,32 @@
 "use client"
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, User, ArrowRight } from 'lucide-react'
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { X, Send, User, ArrowRight } from "lucide-react"
 
 interface SendMoneyModalProps {
   isOpen: boolean
   onClose: () => void
   userBalance: number
-  onSend: (amount: number, recipient: string) => void
+  onSend: (amount: number, recipient: string) => Promise<void> | void
 }
 
-export function SendMoneyModal({ isOpen, onClose, userBalance, onSend }: SendMoneyModalProps) {
-  const [step, setStep] = useState(1)
-  const [recipient, setRecipient] = useState('')
-  const [amount, setAmount] = useState('')
-  const [memo, setMemo] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+export function SendMoneyModal({
+  isOpen,
+  onClose,
+  userBalance,
+  onSend,
+}: SendMoneyModalProps) {
+  const [step, setStep] = useState<number>(1)
+  const [recipient, setRecipient] = useState<string>("")
+  const [amount, setAmount] = useState<string>("")
+  const [memo, setMemo] = useState<string>("")
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const quickAmounts = [1000, 2500, 5000, 10000]
 
   const handleAmountChange = (value: string) => {
-    // Allow only numbers and decimal point
     const regex = /^\d*\.?\d*$/
-    if (regex.test(value) || value === '') {
+    if (regex.test(value) || value === "") {
       setAmount(value)
     }
   }
@@ -30,20 +34,20 @@ export function SendMoneyModal({ isOpen, onClose, userBalance, onSend }: SendMon
   const handleSend = async () => {
     setIsLoading(true)
     try {
-      await onSend(parseInt(amount), recipient.toLowerCase())
-      setIsLoading(false)
+      await onSend(Number(amount), recipient.toLowerCase())
       handleClose()
-    } catch (error) {
+    } catch {
+      alert("Failed to send payment")
+    } finally {
       setIsLoading(false)
-      alert('Failed to send payment')
     }
   }
 
   const handleClose = () => {
     setStep(1)
-    setRecipient('')
-    setAmount('')
-    setMemo('')
+    setRecipient("")
+    setAmount("")
+    setMemo("")
     setIsLoading(false)
     onClose()
   }
@@ -76,13 +80,11 @@ export function SendMoneyModal({ isOpen, onClose, userBalance, onSend }: SendMon
             </div>
 
             {step === 1 && (
-              <motion.div
-                initial={{ x: 0 }}
-                animate={{ x: 0 }}
-                className="space-y-6"
-              >
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Recipient BPI ID</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Recipient BPI ID
+                  </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
@@ -103,22 +105,20 @@ export function SendMoneyModal({ isOpen, onClose, userBalance, onSend }: SendMon
                   Continue
                   <ArrowRight className="w-4 h-4" />
                 </button>
-              </motion.div>
+              </div>
             )}
 
             {step === 2 && (
-              <motion.div
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                className="space-y-6"
-              >
+              <div className="space-y-6">
                 <div className="text-center p-4 bg-gray-800/50 rounded-lg">
                   <p className="text-sm text-gray-400">Sending to</p>
                   <p className="font-semibold">{recipient}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Amount (₹)</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Amount (₹)
+                  </label>
                   <input
                     type="text"
                     value={amount}
@@ -126,7 +126,9 @@ export function SendMoneyModal({ isOpen, onClose, userBalance, onSend }: SendMon
                     className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none transition-colors text-2xl font-semibold text-center"
                     placeholder="0.00"
                   />
-                  <p className="text-sm text-gray-400 mt-2">Available: ₹{userBalance.toLocaleString()}</p>
+                  <p className="text-sm text-gray-400 mt-2">
+                    Available: ₹{userBalance.toLocaleString()}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
@@ -142,13 +144,15 @@ export function SendMoneyModal({ isOpen, onClose, userBalance, onSend }: SendMon
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Memo (Optional)</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Memo (Optional)
+                  </label>
                   <input
                     type="text"
                     value={memo}
                     onChange={(e) => setMemo(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
-                    placeholder="What's this for?"
+                    placeholder="What&apos;s this for?"
                   />
                 </div>
 
@@ -161,23 +165,25 @@ export function SendMoneyModal({ isOpen, onClose, userBalance, onSend }: SendMon
                   </button>
                   <button
                     onClick={handleSend}
-                    disabled={!amount || parseInt(amount) > userBalance || isLoading}
+                    disabled={
+                      !amount || Number(amount) > userBalance || isLoading
+                    }
                     className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         Sending...
                       </>
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        Send ₹{amount || '0'}
+                        Send ₹{amount || "0"}
                       </>
                     )}
                   </button>
                 </div>
-              </motion.div>
+              </div>
             )}
           </motion.div>
         </motion.div>
