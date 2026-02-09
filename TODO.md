@@ -1,0 +1,6 @@
+- [ ] Check Git status
+- [ ] Initialize Git if necessary
+- [ ] Add remote origin
+- [ ] Add all files
+- [ ] Commit changes
+- [ ] Push to main branch

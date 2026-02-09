@@ -1,0 +1,20 @@
+{
+  "name": "bpi",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd bpi-backend && npm run dev",
+    "dev:frontend": "cd bpi-frontend && npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.9",
+    "@heroicons/react": "^2.2.0",
+    "clsx": "^2.1.1",
+    "mongodb": "^6.20.0",
+    "solc": "^0.8.30",
+    "tailwind-merge": "^3.3.1"
+  }
+}
