@@ -32,11 +32,8 @@ export default function AuthPage() {
 
     try {
       if (isLogin) {
+        // 🔑 login() is strongly typed → no guards needed
         const response = await apiClient.login({ email, password })
-
-        if (!response || !("data" in response)) {
-          throw new Error("Invalid login response")
-        }
 
         localStorage.setItem("accessToken", response.data.accessToken)
         localStorage.setItem("refreshToken", response.data.refreshToken)
@@ -50,10 +47,6 @@ export default function AuthPage() {
           password,
           bankCode: selectedBank,
         })
-
-        if (!response || !("data" in response)) {
-          throw new Error("Invalid registration response")
-        }
 
         localStorage.setItem("accessToken", response.data.accessToken)
         localStorage.setItem("refreshToken", response.data.refreshToken)
@@ -207,7 +200,7 @@ export default function AuthPage() {
           </form>
 
           <div className="text-center mt-6 text-gray-400">
-            {isLogin ? "Don’t have an account?" : "Already have an account?"}
+            {isLogin ? "Don&apos;t have an account?" : "Already have an account?"}
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}

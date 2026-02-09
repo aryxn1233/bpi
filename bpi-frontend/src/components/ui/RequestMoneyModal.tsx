@@ -1,21 +1,25 @@
 "use client"
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { X, ArrowDownLeft, User, ArrowRight } from 'lucide-react'
-import { apiClient } from '@/lib/api'
+
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { X, ArrowDownLeft, User, ArrowRight } from "lucide-react"
+import { apiClient } from "@/lib/api"
 
 interface RequestMoneyModalProps {
   isOpen: boolean
   onClose: () => void
 }
 
-export function RequestMoneyModal({ isOpen, onClose }: RequestMoneyModalProps) {
-  const [step, setStep] = useState(1)
-  const [fromUser, setFromUser] = useState('')
-  const [amount, setAmount] = useState('')
-  const [memo, setMemo] = useState('')
-  const [expirationHours, setExpirationHours] = useState('24')
-  const [isLoading, setIsLoading] = useState(false)
+export function RequestMoneyModal({
+  isOpen,
+  onClose,
+}: RequestMoneyModalProps) {
+  const [step, setStep] = useState<number>(1)
+  const [fromUser, setFromUser] = useState<string>("")
+  const [amount, setAmount] = useState<string>("")
+  const [memo, setMemo] = useState<string>("")
+  const [expirationHours, setExpirationHours] = useState<string>("24")
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const quickAmounts = [1000, 2500, 5000, 10000]
 
@@ -24,13 +28,15 @@ export function RequestMoneyModal({ isOpen, onClose }: RequestMoneyModalProps) {
     try {
       await apiClient.requestPayment({
         fromHandle: fromUser,
-        amount: parseInt(amount),
+        amount: Number(amount),
         memo: memo || undefined,
-        expirationHours: parseInt(expirationHours)
+        expirationHours: Number(expirationHours),
       })
-      alert('Payment request sent successfully!')
-    } catch (error: any) {
-      alert('Failed to send payment request: ' + error.message)
+      alert("Payment request sent successfully!")
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to send payment request"
+      alert(message)
     } finally {
       setIsLoading(false)
       handleClose()
@@ -39,9 +45,9 @@ export function RequestMoneyModal({ isOpen, onClose }: RequestMoneyModalProps) {
 
   const handleClose = () => {
     setStep(1)
-    setFromUser('')
-    setAmount('')
-    setMemo('')
+    setFromUser("")
+    setAmount("")
+    setMemo("")
     setIsLoading(false)
     onClose()
   }
@@ -74,20 +80,18 @@ export function RequestMoneyModal({ isOpen, onClose }: RequestMoneyModalProps) {
             </div>
 
             {step === 1 && (
-              <motion.div
-                initial={{ x: 0 }}
-                animate={{ x: 0 }}
-                className="space-y-6"
-              >
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Request from (BPI ID)</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Request from (BPI ID)
+                  </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
                       type="text"
                       value={fromUser}
                       onChange={(e) => setFromUser(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                      className="w-full pl-12 pr-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none"
                       placeholder="username@bank"
                     />
                   </div>
@@ -96,32 +100,30 @@ export function RequestMoneyModal({ isOpen, onClose }: RequestMoneyModalProps) {
                 <button
                   onClick={() => setStep(2)}
                   disabled={!fromUser}
-                  className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+                  className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4" />
                 </button>
-              </motion.div>
+              </div>
             )}
 
             {step === 2 && (
-              <motion.div
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                className="space-y-6"
-              >
+              <div className="space-y-6">
                 <div className="text-center p-4 bg-gray-800/50 rounded-lg">
                   <p className="text-sm text-gray-400">Requesting from</p>
                   <p className="font-semibold">{fromUser}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Amount (₹)</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Amount (₹)
+                  </label>
                   <input
                     type="number"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none transition-colors text-2xl font-semibold text-center"
+                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none text-2xl font-semibold text-center"
                     placeholder="0"
                   />
                 </div>
@@ -131,7 +133,7 @@ export function RequestMoneyModal({ isOpen, onClose }: RequestMoneyModalProps) {
                     <button
                       key={quickAmount}
                       onClick={() => setAmount(quickAmount.toString())}
-                      className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors"
+                      className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm"
                     >
                       ₹{quickAmount.toLocaleString()}
                     </button>
@@ -139,22 +141,26 @@ export function RequestMoneyModal({ isOpen, onClose }: RequestMoneyModalProps) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">What's this for? (Optional)</label>
+                  <label className="block text-sm font-medium mb-2">
+                    What&apos;s this for? (Optional)
+                  </label>
                   <input
                     type="text"
                     value={memo}
                     onChange={(e) => setMemo(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none"
                     placeholder="Dinner, movie tickets, etc."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Expiration (hours)</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Expiration (hours)
+                  </label>
                   <select
                     value={expirationHours}
                     onChange={(e) => setExpirationHours(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none"
                   >
                     <option value="1">1 hour</option>
                     <option value="6">6 hours</option>
@@ -168,29 +174,29 @@ export function RequestMoneyModal({ isOpen, onClose }: RequestMoneyModalProps) {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setStep(1)}
-                    className="flex-1 py-3 border border-gray-600 hover:border-gray-500 rounded-lg font-semibold transition-colors"
+                    className="flex-1 py-3 border border-gray-600 rounded-lg font-semibold"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleRequest}
                     disabled={!amount || isLoading}
-                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         Requesting...
                       </>
                     ) : (
                       <>
                         <ArrowDownLeft className="w-4 h-4" />
-                        Request ₹{amount || '0'}
+                        Request ₹{amount || "0"}
                       </>
                     )}
                   </button>
                 </div>
-              </motion.div>
+              </div>
             )}
           </motion.div>
         </motion.div>

@@ -1,15 +1,58 @@
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api"
 
-type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [key: string]: JsonValue }
+/* =======================
+   Response Types
+======================= */
 
-type ApiResponse<T = JsonValue> = T
+export interface AuthResponse {
+  data: {
+    accessToken: string
+    refreshToken: string
+  }
+}
+
+export interface BalanceResponse {
+  data: {
+    balance: number
+  }
+}
+
+export interface Transaction {
+  id: string
+  createdAt: string
+  fromHandle: string
+  toHandle: string
+  amount: number
+  status: "pending" | "completed" | "failed"
+  direction: "sent" | "received"
+  type?: "request" | "payment"
+  expiresAt?: string
+}
+
+export interface TransactionsResponse {
+  data: {
+    transactions: Transaction[]
+  }
+}
+
+export interface User {
+  id: string
+  bpiHandle: string
+  name: string
+  email: string
+  bankCode: string
+}
+
+export interface MeResponse {
+  data: {
+    user: User
+  }
+}
+
+/* =======================
+   API Client
+======================= */
 
 class ApiClient {
   private baseURL: string
@@ -18,15 +61,15 @@ class ApiClient {
     this.baseURL = baseURL
   }
 
-  private async request<T = ApiResponse>(
+  private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     }
 
     if (typeof window !== "undefined") {
@@ -44,8 +87,8 @@ class ApiClient {
     if (!response.ok) {
       let message = `HTTP ${response.status}`
       try {
-        const errorData = (await response.json()) as { message?: string }
-        message = errorData.message ?? message
+        const err = (await response.json()) as { message?: string }
+        message = err.message ?? message
       } catch {
         /* ignore */
       }
@@ -55,80 +98,72 @@ class ApiClient {
     return (await response.json()) as T
   }
 
+  /* ========= AUTH ========= */
+
   async login(credentials: {
     email: string
     password: string
     rememberMe?: boolean
-  }) {
-    return this.request("/auth/login", {
+  }): Promise<AuthResponse> {
+    return this.request<AuthResponse>("/auth/login", {
       method: "POST",
       body: JSON.stringify(credentials),
     })
   }
 
-  async register(userData: {
+  async register(data: {
     name: string
     email: string
     password: string
     bankCode: string
-  }) {
-    return this.request("/auth/register", {
+  }): Promise<AuthResponse> {
+    return this.request<AuthResponse>("/auth/register", {
       method: "POST",
-      body: JSON.stringify(userData),
+      body: JSON.stringify(data),
     })
   }
 
-  async getMe() {
-    return this.request("/auth/me")
+  async getMe(): Promise<MeResponse> {
+    return this.request<MeResponse>("/auth/me")
   }
 
-  async refreshToken() {
-    if (typeof window === "undefined") return null
+  /* ========= DASHBOARD ========= */
 
-    const refreshToken = localStorage.getItem("refreshToken")
-    if (!refreshToken) return null
-
-    return this.request("/auth/refresh", {
-      method: "POST",
-      body: JSON.stringify({ refreshToken }),
-    })
+  async getBalance(): Promise<BalanceResponse> {
+    return this.request<BalanceResponse>("/payment/balance")
   }
 
-  async sendPayment(paymentData: {
+  async getTransactions(params?: {
+    limit?: number
+    page?: number
+    type?: string
+    status?: string
+  }): Promise<TransactionsResponse> {
+    const query = params
+      ? new URLSearchParams(
+          Object.entries(params).filter(
+            ([, v]) => v !== undefined
+          ) as [string, string][]
+        ).toString()
+      : ""
+
+    return this.request<TransactionsResponse>(
+      `/payment/transactions${query ? `?${query}` : ""}`
+    )
+  }
+
+  async sendPayment(data: {
     recipientHandle: string
     amount: number
     memo?: string
   }) {
     return this.request("/payment/send", {
       method: "POST",
-      body: JSON.stringify(paymentData),
+      body: JSON.stringify(data),
     })
   }
 
-  async getTransactions(params?: {
-    page?: number
-    limit?: number
-    type?: string
-    status?: string
-  }) {
-    const query = params
-      ? new URLSearchParams(
-          Object.entries(params).filter(
-            ([, value]) => value !== undefined
-          ) as [string, string][]
-        ).toString()
-      : ""
-
-    return this.request(
-      `/payment/transactions${query ? `?${query}` : ""}`
-    )
-  }
-
-  async getBalance() {
-    return this.request("/payment/balance")
-  }
-
-  async requestPayment(requestData: {
+  async requestPayment(data: {
     fromHandle: string
     amount: number
     memo?: string
@@ -136,7 +171,7 @@ class ApiClient {
   }) {
     return this.request("/payment/request", {
       method: "POST",
-      body: JSON.stringify(requestData),
+      body: JSON.stringify(data),
     })
   }
 
@@ -152,24 +187,23 @@ class ApiClient {
     })
   }
 
-  async getProfile() {
-    return this.request("/user/profile")
-  }
-
-  async updateProfile(profileData: { name: string }) {
+  async updateProfile(data: {
+    name: string
+    email: string
+  }) {
     return this.request("/user/profile", {
       method: "PUT",
-      body: JSON.stringify(profileData),
+      body: JSON.stringify(data),
     })
   }
 
-  async changePassword(passwordData: {
+  async changePassword(data: {
     currentPassword: string
     newPassword: string
   }) {
     return this.request("/user/change-password", {
-      method: "PUT",
-      body: JSON.stringify(passwordData),
+      method: "POST",
+      body: JSON.stringify(data),
     })
   }
 }
