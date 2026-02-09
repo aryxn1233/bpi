@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://bpi-lqji.vercel.app/"
+  process.env.NEXT_PUBLIC_API_URL ?? "https://bpi-lqji-lrkwmo04s-aryxn1233s-projects.vercel.app/"
 
 /* =======================
    Response Types
