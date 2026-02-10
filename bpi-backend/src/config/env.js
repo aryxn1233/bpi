@@ -13,7 +13,7 @@ module.exports = {
     BPI_TOKEN: process.env.BPI_TOKEN_ADDRESS || '',
     BPI_PAYMENTS: process.env.BPI_PAYMENTS_ADDRESS || ''
   },
-  FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
+  FRONTEND_URL: process.env.FRONTEND_URL || 'https://bpi-brown.vercel.app/',
   EMAIL_HOST: process.env.EMAIL_HOST || '',
   EMAIL_PORT: process.env.EMAIL_PORT || 587,
   EMAIL_USER: process.env.EMAIL_USER || '',
