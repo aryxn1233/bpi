@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://bpi-production.up.railway.app/api"
+  process.env.NEXT_PUBLIC_API_URL ?? "https://bpi-43ir.onrender.com"
 
 /* =======================
    Response Types
