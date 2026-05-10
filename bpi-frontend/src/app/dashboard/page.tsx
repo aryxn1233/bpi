@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { apiClient, Transaction as ApiTransaction } from "@/lib/api"
 import { SendMoneyModal } from "@/components/ui/SendMoneyModal"
 import { RequestMoneyModal } from "@/components/ui/RequestMoneyModal"
+import { TransactionList } from "@/components/ui/TransactionList"
 
 /* =======================
    Types
@@ -101,7 +102,14 @@ export default function DashboardPage() {
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-bold text-white">Dashboard</h1>
+        <div>
+          <h1 className="text-4xl font-bold text-white">Dashboard</h1>
+          {user && (
+            <p className="text-muted-foreground text-sm mt-1">
+              BPI Handle: <span className="text-blue-400 font-medium">{user.bpiHandle}</span>
+            </p>
+          )}
+        </div>
         <div className="flex gap-3">
           <Button
             variant="outline"
@@ -140,6 +148,24 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Transaction History */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Transaction History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TransactionList transactions={transactions.map(tx => ({
+            id: tx.id,
+            type: tx.direction,
+            amount: tx.amount,
+            recipient: tx.toHandle,
+            sender: tx.fromHandle,
+            time: new Date(tx.createdAt).toLocaleString(),
+            status: tx.status,
+          }))} />
+        </CardContent>
+      </Card>
 
       {/* Modals */}
       <SendMoneyModal
