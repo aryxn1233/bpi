@@ -10,9 +10,16 @@ async function fundUsers() {
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/bpi-backend');
     console.log('✅ Connected to MongoDB');
 
-    // Update all users with initial balance
+    const query = { isActive: true };
+    const handleArg = process.argv[2];
+    if (handleArg) {
+      query.bpiHandle = handleArg.toLowerCase();
+      console.log(` Funding single user: ${handleArg}`);
+    }
+
+    // Update users with initial balance
     const result = await User.updateMany(
-      { isActive: true },
+      query,
       { balance: 10000 }
     );
 
